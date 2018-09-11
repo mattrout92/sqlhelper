@@ -23,12 +23,12 @@ type SQLRow interface {
 
 // Rows wraps SQLRows to allow struct slice scan
 type Rows struct {
-	sqlRows SQLRows
+	SQLRows SQLRows
 }
 
 // Row wraps SQLRow to allow direct struct scan
 type Row struct {
-	sqlRow SQLRow
+	SQLRow SQLRow
 }
 
 // ScanToStructSlice allows the scanning of sql rows to
@@ -50,13 +50,13 @@ func (r *Rows) ScanToStructSlice(s interface{}) error {
 
 	results := make(map[string][]interface{})
 
-	cols, err := r.sqlRows.Columns()
+	cols, err := r.SQLRows.Columns()
 	if err != nil {
 		return err
 	}
 
 	var rows int
-	for r.sqlRows.Next() {
+	for r.SQLRows.Next() {
 		rows++
 		columns := make([]interface{}, len(cols))
 		columnPointers := make([]interface{}, len(cols))
@@ -65,7 +65,7 @@ func (r *Rows) ScanToStructSlice(s interface{}) error {
 		}
 
 		// Scan the result into the column pointers...
-		if err := r.sqlRows.Scan(columnPointers...); err != nil {
+		if err := r.SQLRows.Scan(columnPointers...); err != nil {
 			return err
 		}
 
@@ -97,6 +97,11 @@ func (r *Rows) ScanToStructSlice(s interface{}) error {
 	return nil
 }
 
+// Close is a wrapped closer for sql rows
+func (r *Rows) Close() error {
+	return r.SQLRows.Close()
+}
+
 // ScanToStruct allows the scanning of a row to a struct
 func (r *Row) ScanToStruct(s interface{}) error {
 	v := reflect.ValueOf(s)
@@ -115,7 +120,7 @@ func (r *Row) ScanToStruct(s interface{}) error {
 
 	results := make(map[string]interface{})
 
-	cols, err := r.sqlRow.Columns()
+	cols, err := r.SQLRow.Columns()
 	if err != nil {
 		return err
 	}
@@ -127,7 +132,7 @@ func (r *Row) ScanToStruct(s interface{}) error {
 	}
 
 	// Scan the result into the column pointers...
-	if err := r.sqlRow.Scan(columnPointers...); err != nil {
+	if err := r.SQLRow.Scan(columnPointers...); err != nil {
 		return err
 	}
 
